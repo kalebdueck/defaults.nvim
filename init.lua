@@ -19,7 +19,9 @@ require('packer').startup(function()
   use 'wbthomason/packer.nvim'       -- Package manager
   use 'tpope/vim-fugitive'           -- Git commands in nvim
   use 'tpope/vim-rhubarb'            -- Fugitive-companion to interact with github
+  use 'tpope/vim-surround'           
   use 'tpope/vim-commentary'         -- "gc" to comment visual regions/lines
+  use 'airblade/vim-gitgutter'
   use 'ludovicchabant/vim-gutentags' -- Automatic tags management
   -- UI to select things (files, grep results, open buffers...)
   use {'nvim-telescope/telescope.nvim', requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}} }
@@ -30,6 +32,7 @@ require('packer').startup(function()
   -- Add git related info in the signs columns and popups
   use {'lewis6991/gitsigns.nvim', requires = {'nvim-lua/plenary.nvim'} }
   use 'neovim/nvim-lspconfig'        -- Collection of configurations for built-in LSP client
+  use 'kabouzeid/nvim-lspinstall'
   use 'hrsh7th/nvim-compe'           -- Autocompletion plugin
 end)
 
@@ -135,6 +138,9 @@ require('telescope').setup {
 }
 --Add leader shortcuts
 vim.api.nvim_set_keymap('n', '<leader>f', [[<cmd>lua require('telescope.builtin').find_files()<cr>]], { noremap = true, silent = true})
+
+vim.api.nvim_set_keymap('n', '<leader>a', "&filetype ==# 'fugitiveblame' ? \":quit\r\" : \":Git blame\r\"", {noremap= true, expr = true, silent = true})
+
 vim.api.nvim_set_keymap('n', '<leader><space>', [[<cmd>lua require('telescope.builtin').buffers()<cr>]], { noremap = true, silent = true})
 vim.api.nvim_set_keymap('n', '<leader>l', [[<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>]], { noremap = true, silent = true})
 vim.api.nvim_set_keymap('n', '<leader>t', [[<cmd>lua require('telescope.builtin').tags()<cr>]], { noremap = true, silent = true})
@@ -185,11 +191,23 @@ local on_attach = function(_client, bufnr)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
 end
 
+
+-- Lets start up our php language server
+
+
+
 -- Enable the following language servers
-local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' }
+require'lspinstall'.setup()
+local servers = require'lspinstall'.installed_servers()
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup { on_attach = on_attach }
 end
+
+
+
+
+
+
 
 local sumneko_root_path = vim.fn.getenv("HOME").."/.local/bin/sumneko_lua" -- Change to your sumneko root installation
 local sumneko_binary_path = "/bin/linux/lua-language-server" -- Change to your OS specific output folder
